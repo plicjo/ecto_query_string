@@ -158,13 +158,29 @@ defmodule EctoQueryString do
     end
   end
 
+  def selectable([assoc, "*"], {query, acc}) do
+    has_assoc_field? =
+      Reflection.source_schema(query)
+      |> Reflection.has_assoc?(schema, assoc) do
+
+    if assoc_field do
+      assoc_selection_field ->
+        field = String.to_atom(assoc)
+        new_acc = update_in(acc[field], &[assoc_selection_field | List.wrap(&1)])
+        {query, new_acc}
+    else
+      nil -> {query, acc}
+
+    end
+  end
+
   def selectable([assoc, field], {query, acc}) do
-    field =
+    assoc_field =
       Reflection.source_schema(query)
       |> Reflection.assoc_schema(assoc)
       |> Reflection.field(field)
 
-    case field do
+    case assoc_field do
       nil ->
         {query, acc}
 
